@@ -1,0 +1,55 @@
+### Question
+
+Given an array of strings called `words` and an integer array `weights` of length 26 representing the numerical weight of each lowercase English letter, find the "weight" of each word by summing the weights of its characters. For every word, take its total weight modulo 26, and map the resulting number to a lowercase English letter using reverse alphabetical order (where `0` becomes `'z'`, `1` becomes `'y'`, ..., `25` becomes `'a'`). Return a single string formed by concatenating the mapped characters for all the words in their original order.
+
+---
+
+### Example
+
+* **Input:** `words = ["a"]`, `weights = [1, 1, 1, 1... 1]` (all 1s)
+* **Output:** `"y"`
+* **Explanation:** The word `"a"` consists of one character with a weight of 1. The total weight is 1. We take `1 % 26 = 1`. Mapping 1 in reverse alphabetical order gives us `'y'` (since 0 is `'z'`).
+
+---
+
+### Algorithm
+
+Imagine you are at a grocery store where each type of fruit (letter) has a specific price (weight). For each shopping basket (word), you calculate the total bill (sum of weights). However, the cashier has a strange rule: they only care about the remainder of the bill when divided by 26. Based on that remainder, they give you a sticker from a roll that is printed backwards from 'z' to 'a'.
+
+1. Initialize an empty string to hold the final mapped characters.
+2. Iterate through each word in the provided list.
+3. For each word, calculate its total weight by iterating through its characters, finding their alphabetical index (`0` for 'a', `1` for 'b'), and adding the corresponding value from the `weights` array.
+4. Take the total weight modulo 26.
+5. Find the corresponding reverse-alphabetical character by subtracting the modulo result from the ASCII value of `'z'` and converting it back to a character. Append this to your result string.
+
+> **Tip:** Think of the "modulo 26" step as a dial with 26 notches, and the "reverse alphabetical mapping" as just turning that dial backward starting from 'z'.
+
+---
+
+### Code
+
+```python
+class Solution:
+    def mapWordWeights(self, words: List[str], weights: List[int]) -> str:
+        ans = ""
+        for s in words:
+            x = 0
+            for c in s:
+                i = ord(c) - ord('a')
+                x += weights[i]
+            x %= 26
+            ans += chr(ord('z') - x)
+        return ans
+
+```
+
+---
+
+### Complexity Analysis
+
+* **Time Complexity:** $O(N \times M)$ (where $N$ is the number of words and $M$ is the maximum length of a word).
+* *Justification:* The algorithm must iterate through every single character of every word exactly once to compute the total sums.
+
+
+* **Space Complexity:** $O(1)$ auxiliary space.
+* *Justification:* Excluding the space required for the output string, the algorithm only uses a few integer variables (`x`, `i`) to keep track of the sums and indices, meaning the memory used does not scale with the size of the input arrays.
