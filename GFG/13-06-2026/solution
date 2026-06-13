@@ -1,1 +1,80 @@
 
+### Question
+
+**Binary Strings with Equal Sum of Two Halves**
+
+Given a number n, find the count of all binary sequences of length 2n such that the sum of the first n bits is the same as the sum of the last n bits.
+**Note:** Since the answer can be very large, return the answer modulo $10^9+7$.
+
+---
+
+### Examples
+
+* **Input:** n = 2
+* **Output:** 6
+* **Explanation:** There are 6 sequences of length 2n (which is 4). The sequences are 0101, 0110, 1010, 1001, 0000, and 1111.
+* **Input:** n = 1
+* **Output:** 2
+* **Explanation:** There are 2 sequences of length 2n (which is 2). The sequences are 00 and 11.
+
+---
+
+### Algorithm
+
+To solve this problem efficiently, we can use a beautiful mathematical shortcut instead of generating all possible strings.
+
+If the sum of the first half is k, it means we chose k positions out of n to be "1"s. The number of ways to do this is $\binom{n}{k}$. For the second half to also sum to k, we again have $\binom{n}{k}$ ways. For any given k, the total combinations are $\binom{n}{k} \times \binom{n}{k} = \binom{n}{k}^2$.
+
+To find the total valid strings, we sum this up for all possible values of k (from 0 to n).
+
+Mathematically, the sum of the squares of these combinations $\sum_{k=0}^{n} \binom{n}{k}^2$ simplifies exactly to $\binom{2n}{n}$.
+
+**Simple Analogy**
+Imagine you have two rival sports teams, Team A and Team B, each with `n` players. You need to form an "All-Star" team of exactly `n` players combined from both teams.
+If you pick `k` players from Team A, you *must* pick the remaining `n-k` players from Team B. The total number of ways to form this combined `n`-player team out of the `2n` available players is exactly "2n choose n" or $\binom{2n}{n}$.
+
+**Tip to Remember the Pattern**
+Whenever you need to match combinations of two halves symmetrically, the sum of squared binomial coefficients $\sum_{k=0}^{n} \binom{n}{k}^2$ will always collapse into a single combination: $\binom{2n}{n}$.
+
+---
+
+### Code
+
+*Note: Your original logic was on the right mathematical track, but Python's default recursion limit will fail for `n = 10^5`, and calculating massive factorials directly will cause performance issues. The corrected code below uses an iterative approach with **Modular Inverse** to prevent massive integer calculations and bypass recursion limits.*
+
+```python
+class Solution:
+    def computeValue(self, n):
+        MOD = 10**9 + 7
+        
+        # Calculate n! % MOD
+        fact_n = 1
+        for i in range(1, n + 1):
+            fact_n = (fact_n * i) % MOD
+            
+        # Calculate (2n)! % MOD starting from n!
+        fact_2n = fact_n
+        for i in range(n + 1, 2 * n + 1):
+            fact_2n = (fact_2n * i) % MOD
+            
+        # Fermat's Little Theorem to find modular inverse: a^(m-2) % m
+        def modInverse(x):
+            return pow(x, MOD - 2, MOD)
+            
+        # We need (2n)! / (n! * n!)
+        # In modular arithmetic, division is done by multiplying with the modular inverse.
+        denominator = (fact_n * fact_n) % MOD
+        ans = (fact_2n * modInverse(denominator)) % MOD
+        
+        return ans
+
+```
+
+---
+
+### Complexity Analysis
+
+* **Time Complexity:** O(n)
+* **Reason:** We use a simple loop iterating up to 2n to calculate the factorials, and computing the modular inverse takes logarithmic time, making it strictly proportional to n.
+* **Space Complexity:** O(1)
+* **Reason:** We only use a few variables (`fact_n`, `fact_2n`, `denominator`) to store intermediate running totals, requiring constant memory regardless of the input size.
