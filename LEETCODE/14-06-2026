@@ -1,0 +1,82 @@
+### Question
+
+In an even-length singly-linked list of size $n$, the $i^{\text{th}}$ node (0-indexed) is considered the **twin** of the $(n - 1 - i)^{\text{th}}$ node for all $0 \le i \le \left(\frac{n}{2}\right) - 1$. The **twin sum** is defined as the sum of a node's value and its twin's value. Given the head of such a linked list, find and return the **maximum twin sum**.
+
+---
+
+### Example
+
+* **Input:** `head = [5, 4, 2, 1]`
+* **Output:** `6`
+* **Explanation:** * Node 0 (`5`) is the twin of Node 3 (`1`), yielding a twin sum of $5 + 1 = 6$.
+* Node 1 (`4`) is the twin of Node 2 (`2`), yielding a twin sum of $4 + 2 = 6$.
+* The maximum twin sum among all pairs is `6`.
+
+
+
+---
+
+### Algorithm
+
+Imagine a line of people matching up from opposite ends to high-five each other—the first person high-fives the last person, the second high-fives the second-to-last, and so on. Since a singly-linked list only lets us walk forward, we can't easily read backward from the end.
+
+To solve this efficiently without using extra memory, we can restructure the line:
+
+1. **Find the Middle:** Use a slow and a fast pointer (where the fast pointer moves twice as fast) to locate the exact midpoint of the linked list.
+2. **Reverse the Second Half:** Flip the direction of the arrows in the second half of the list. Now, the second half points backward from the very last node toward the middle.
+3. **Pair Up and Sum:** Walk one pointer from the original head forward, and another pointer from the new tail backward. Add their values together at each step and track the highest total.
+
+> 💡 **Pattern Tip:** When you need to compare elements from the beginning and the end of a singly-linked list simultaneously (like checking for palindromes or pairing symmetrically), think **"Slow/Fast pointer to find the middle, then reverse the back half"** to achieve an optimal $\mathcal{O}(1)$ auxiliary space solution.
+
+---
+
+### Code
+
+```python
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, val=0, next=None):
+#         self.val = val
+#         self.next = next
+
+class Solution:
+    def pairSum(self, head: Optional[ListNode]) -> int:
+        # Step 1: Find the middle of the linked list
+        slow, fast = head, head
+        while fast and fast.next:
+            slow = slow.next
+            fast = fast.next.next
+        
+        # Step 2: Reverse the second half of the linked list
+        prev = None
+        curr = slow
+        while curr:
+            nxt = curr.next
+            curr.next = prev
+            prev = curr
+            curr = nxt
+            
+        # Step 3: Symmetrically pair nodes from both halves to find max sum
+        max_sum = 0
+        first_half = head
+        second_half = prev  # 'prev' is now the head of the reversed second half
+        
+        while second_half:
+            max_sum = max(max_sum, first_half.val + second_half.val)
+            first_half = first_half.next
+            second_half = second_half.next
+            
+        return max_sum
+
+```
+
+---
+
+### Complexity Analysis
+
+* **Time Complexity:** $\mathcal{O}(n)$
+* *Justification:* The algorithm makes a linear number of passes over the list: one to find the middle, one to reverse the second half, and one to calculate the twin sums.
+
+
+* **Space Complexity:** $\mathcal{O}(1)$
+* *Justification:* The solution manipulates the existing node pointers in-place, requiring no extra data structures like arrays or stacks.
