@@ -1,0 +1,84 @@
+### Question
+
+Given a matrix `mat[][]` of size $n \times m$ consisting of `0`s and `1`s, you begin a traversal from the top-left cell $(0, 0)$ initially moving in a **left-to-right** (East) direction.
+
+As you move through the matrix, follow these rules:
+
+* If the current cell contains `0`, continue moving in your current direction.
+* If the current cell contains `1`, change your direction $90^\circ$ to the right (clockwise turn), flip the value of that cell to `0`, and then proceed.
+
+Determine the exact coordinates (row and column index) of the cell from which you ultimately **exit** the boundaries of the matrix.
+
+---
+
+### Example
+
+**Input:** ```text
+mat[][] = [[0, 1, 0],
+[0, 1, 1],
+[0, 0, 0]]
+
+```
+
+**Output:** `[1, 0]`
+
+**Explanation:** 1. Enter at `(0, 0)` $\rightarrow$ value is `0` $\rightarrow$ keep moving right to `(0, 1)`.
+2. At `(0, 1)` $\rightarrow$ value is `1` $\rightarrow$ flip it to `0`, turn right (now moving down), and move to `(1, 1)`.
+3. At `(1, 1)` $\rightarrow$ value is `1` $\rightarrow$ flip it to `0`, turn right (now moving left), and move to `(1, 0)`.
+4. At `(1, 0)` $\rightarrow$ value is `0` $\rightarrow$ keep moving left $\rightarrow$ steps out of the matrix boundary. 
+The last valid cell before exiting was `[1, 0]`.
+
+---
+
+### Algorithm
+Imagine you are a toy robot winding through a grid-based maze. You love walking straight, but every time you trip over a obstacle (a `1`), you pick it up to clear the path (flipping it to `0`) and automatically turn $90^\circ$ clockwise to find a new route. Because you can only exit the maze by completely stepping outside its walls, you need to keep track of your positions. Since stepping *outside* means you've gone too far, you must save your last valid grid coordinate right before taking that final, out-of-bounds step.
+
+> 💡 **Pattern Tip:** To smoothly handle directional turns without messy `if-else` chains, use a fixed directional array mapping system: `directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]` (representing Right, Down, Left, Up). Incrementing your direction index by `(d + 1) % 4` cleanly rotates you clockwise every single time.
+
+---
+
+### Code
+
+```python
+class Solution:
+    def exitPoint(self, mat: list[list[int]]) -> list[int]:
+        n = len(mat)
+        m = len(mat[0])
+        
+        # Directions mapping: 0: Right, 1: Down, 2: Left, 3: Up
+        dr = [0, 1, 0, -1]
+        dc = [1, 0, -1, 0]
+        
+        r, c = 0, 0
+        d = 0  # Start facing right
+        
+        # Track the last valid position
+        last_r, last_c = 0, 0
+        
+        while 0 <= r < n and 0 <= c < m:
+            # Save current valid coordinates before moving
+            last_r, last_c = r, c
+            
+            # If obstacle is hit, turn clockwise and clear it
+            if mat[r][c] == 1:
+                d = (d + 1) % 4
+                mat[r][c] = 0
+            
+            # Take a step in the active direction
+            r += dr[d]
+            c += dc[d]
+            
+        return [last_r, last_c]
+
+```
+
+---
+
+### Complexity Analysis
+
+* **Time Complexity:** $O(n \times m)$
+* *Justification:* In the worst-case scenario, the traversal might visit every cell in the matrix a constant number of times before finally exiting the boundaries.
+
+
+* **Space Complexity:** $O(1)$
+* *Justification:* The algorithm modifies the matrix in-place and utilizes only a handful of primitive pointer variables, requiring no auxiliary storage scaling with input size.
