@@ -1,0 +1,77 @@
+### Question
+
+Given a string `s` consisting of lowercase English letters and special operational characters (`*`, `#`, and `%`), build a new string `result` by processing `s` from left to right according to the following rules:
+
+* If the character is a lowercase English letter, append it to `result`.
+* `*`: Removes the last character from `result` (if it exists).
+* `#`: Duplicates the entire `result` built so far and appends it to itself.
+* `%`: Reverses the entire `result` built so far.
+
+Return the final string `result` after all operations are applied.
+
+---
+
+### Example
+
+* **Input:** `s = "a#b%*"`
+* **Step-by-Step Processing:**
+1. `'a'`: Normal letter appended $\rightarrow$ `"a"`
+2. `'#'`: Duplicate the current string $\rightarrow$ `"aa"`
+3. `'b'`: Normal letter appended $\rightarrow$ `"aab"`
+4. `'%'`: Reverse the current string $\rightarrow$ `"baa"`
+5. `'*'`: Remove the last character $\rightarrow$ `"ba"`
+
+
+* **Output:** `"ba"`
+
+---
+
+### Algorithm
+
+Think of this process like typing on a text editor with special shortcut macros:
+
+* Standard lowercase letters are just normal keys you type out sequentially.
+* The `*` symbol is your **Backspace** key, which quickly deletes your last typed character.
+* The `#` symbol is a **Copy-Paste All** macro, which instantly clones everything on your screen and glues it right to the end of your document.
+* The `%` symbol is a **Flip** button that completely mirrors your document backwards.
+
+By iterating through the input string, you can directly simulate these editor commands on a dynamic text buffer.
+
+> 💡 **Pattern Tip:** When a simulation requires modifications at the end of a sequence (like a backspace) alongside full-string transformations, it is a classic **Simulation** problem best handled by a dynamic array or list acting as a stack for fast updates.
+
+---
+
+### Code
+
+```python
+class Solution:
+    def processStr(self, s: str) -> str:
+        ans = ""
+
+        for x in s:
+            if x == '*':
+                # Remove the last character if it exists
+                ans = ans[:-1]
+
+            elif x == '#':
+                # Duplicate the current string
+                ans += ans
+
+            elif x == '%':
+                # Reverse the current string
+                ans = ans[::-1]
+
+            else:
+                # Append standard lowercase characters
+                ans += x
+
+        return ans
+
+```
+
+---
+
+### Complexity Analysis
+
+* **Time Complexity:** $\mathcal{O}(N \cdot 2^K)$ where $N$ is the total length of the string `s` and $K$ is the number of `#` operations, because every duplication operation doubles the size of the string and requires copying all its elements.
+* **Space Complexity:** $\mathcal{O}(N \cdot 2^K)$ because the memory allocated to store the string copies scales exponentially with the number of duplication characters present in the input.
