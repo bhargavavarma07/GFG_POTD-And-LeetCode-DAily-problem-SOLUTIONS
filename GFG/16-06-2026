@@ -1,0 +1,78 @@
+### Question
+
+Given a list of queries of size $q$ on an array that initially contains only a single value, `0`. There are two types of queries:
+
+* **`0 x`**: Insert the value `x` into the array.
+* **`1 x`**: Replace every element `a` in the array with `a ^ x` (where `^` denotes the bitwise XOR operator).
+
+Return the final array in sorted order after performing all the queries.
+
+---
+
+### Example
+
+**Input:** `q = 5`, `queries = [[0, 6], [0, 3], [0, 2], [1, 4], [1, 5]]`
+
+* Initial: `[0]`
+* Query `[0, 6]`: Add 6 $\rightarrow$ `[0, 6]`
+* Query `[0, 3]`: Add 3 $\rightarrow$ `[0, 6, 3]`
+* Query `[0, 2]`: Add 2 $\rightarrow$ `[0, 6, 3, 2]`
+* Query `[1, 4]`: XOR all by 4 $\rightarrow$ `[4, 2, 7, 6]`
+* Query `[1, 5]`: XOR all by 5 $\rightarrow$ `[1, 7, 2, 3]`
+
+**Output:** `[1, 2, 3, 7]` (The final list sorted in ascending order).
+
+---
+
+### Algorithm
+
+Imagine you are managing a guest list for a VIP club. Instead of updating every single guest's dress code every time a new global theme change happens (which takes too long), you simply hang a sign at the front door stating the current global theme (`cumulative_xor`).
+
+If you process the events **backward** from the end of the night to the beginning:
+
+1. Any global theme changes (Type 1 queries) encountered are added to your sign.
+2. When a guest arrives (Type 0 query), you look at the sign right at that moment and permanently stamp their ticket with it. Because we are moving backward, this stamp perfectly captures all the theme modifications that *would* have happened to them after they arrived.
+3. Don't forget the very first guest (`0`) who was already inside the club before any event started; they get stamped with the final total configuration of the sign.
+
+> 💡 **Pattern Tip:** When a query modifies an entire collection simultaneously, try working **backwards** from the final state. This often turns an expensive $O(N)$ bulk modification into a fast $O(1)$ lazy accumulation.
+
+---
+
+### Code
+
+```python
+class Solution:
+    def constructList(self, queries):
+        arr = []
+        cumulative_xor = 0
+        
+        # Process queries in reverse order
+        for i in queries[::-1]:
+            if i[0] == 1:
+                # Accumulate the XOR modifications
+                cumulative_xor ^= i[1]
+            else:
+                # Store the element combined with all subsequent XOR changes
+                arr.append(i[1] ^ cumulative_xor)
+                
+        # Include the initial '0' element present before all queries
+        arr.append(0 ^ cumulative_xor)
+        
+        # Sort the final array as required by the problem
+        arr.sort()
+        return arr
+
+```
+
+---
+
+### Complexity Analysis
+
+* ### Time Complexity: $\mathcal{O}(q \log q)$
+
+
+Iterating through the queries in reverse takes linear time $\mathcal{O}(q)$, while sorting the final array of size up to $q + 1$ dominates the performance at $\mathcal{O}(q \log q)$ time.
+* ### Space Complexity: $\mathcal{O}(q)$
+
+
+An auxiliary list is required to store and return the elements generated from the input queries.
