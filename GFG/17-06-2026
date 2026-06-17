@@ -1,0 +1,50 @@
+### Question
+
+Given a rope of length $n$ meters, cut it into multiple smaller ropes such that the product of their lengths is maximized. At least one cut is mandatory.
+
+### Example
+
+* **Input:** $n = 5$
+* **Output:** $6$
+* **Explanation:** The rope can be cut into two pieces of lengths $2$ and $3$. The maximum obtainable product is $2 \times 3 = 6$.
+
+### Algorithm
+
+Think of this problem like breaking a budget into smaller bills to buy the most valuable combination of items.
+
+* **The Magic Number (3):** Mathematically, breaking a number into parts close to $e \approx 2.718$ yields the highest product. Since we must use whole numbers, $3$ is our best choice ($3$ is better than $2$ because $3 \times 3 = 9$, which beats $2 \times 2 \times 2 = 8$).
+* **The Exception (2):** If we keep subtracting $3$ and are left with a remainder of $1$, multiplying by $1$ is useless. Instead, we take one of our $3$s and combine it with the $1$ to make a $4$, which we split into $2 \times 2$. If we are left with a remainder of $2$, we just keep it as a $2$.
+
+> **Pattern Tip:** To remember this trick, always greedily chop off pieces of length $3$ unless you are left with a leftover piece of length $1$—in that case, borrow a $3$ to make a $4$ ($2 \times 2$).
+
+### Code
+
+```python
+class Solution:
+    def maxProduct(self, n: int) -> int:
+        # Base cases where n <= 3 and at least one cut is required
+        if n == 2:
+            return 1
+        if n == 3:
+            return 2
+        
+        # If remainder is 0, the answer is perfectly made of 3s
+        if n % 3 == 0:
+            return 3 ** (n // 3)
+            
+        # If remainder is 1, combine a 3 and 1 to make a 4 (2 * 2)
+        elif n % 3 == 1:
+            return (3 ** ((n // 3) - 1)) * 4
+            
+        # If remainder is 2, multiply the 3s by the remaining 2
+        else:
+            return (3 ** (n // 3)) * 2
+
+```
+
+### Complexity Analysis
+
+* **Time Complexity:** $O(1)$
+The algorithm uses basic arithmetic and power operations that execute in constant time regardless of the size of $n$.
+* **Space Complexity:** $O(1)$
+No additional data structures or memory allocations are used, keeping the space footprint constant.
