@@ -1,0 +1,114 @@
+### Question
+
+Given a string `s` containing lowercase English letters and special operational characters (`*`, `#`, `%`), and an integer `k`, find the character at the 0-indexed position `k` in the final processed string.
+
+The operations are defined as follows:
+
+* **English letter:** Appends the letter to the end of the string.
+* `*`: Removes the last character from the string (if the string is not empty).
+* `#`: Duplicates the entire current string (appends a copy of itself to itself).
+* `%`: Reverses the current string.
+
+If `k` is out of bounds of the final string, or if the final string is empty, return `'.'`. Since the final string can grow exponentially (up to $10^{15}$ characters), you must find the character without constructing the final string explicitly.
+
+---
+
+### Example
+
+**Input:** `s = "a#b%*"`, `k = 1`
+
+**Step-by-Step Simulation:**
+
+1. `'a'` $\rightarrow$ `"a"`
+2. `'#'` $\rightarrow$ `"aa"` (Duplicates `"a"`)
+3. `'b'` $\rightarrow$ `"aab"`
+4. `'%'` $\rightarrow$ `"baa"` (Reverses `"aab"`)
+5. `'*'` $\rightarrow$ `"ba"` (Removes the last character `'a'`)
+
+The final string is `"ba"`. The character at index `k = 1` is `'a'`.
+**Output:** `"a"`
+
+---
+
+### Algorithm
+
+Think of this problem like tracing your steps back home after getting lost in a massive, sprawling maze. Instead of trying to build the entire infinite maze in memory (which will cause a crash), we do it in two smart passes:
+
+1. **The Forward Breadcrumb Trail:** We walk through the operations from left to right just to keep track of the *size* of our string at every single step. We store these sizes in an array.
+2. **The Backward Reverse-Engineering:** We start from the very last operation and work our way backward to unravel what happened to our target index `k`:
+* If we hit a regular **letter**, we check if `k` is pointing right at it. If it is, we found our answer! If not, we just step past it.
+* If we hit a **backspace (`*`)**, it means a character was missing during the forward pass, so we adjust our current length boundary to what it was before the deletion.
+* If we hit a **duplicate (`#`)**, the string was cloned into two identical halves. If `k` falls in the second half, it's a perfect mirror of the first half. We can use the modulo operator (`k %= prev_len`) to warp `k` back into the first half.
+* If we hit a **reverse (`%`)**, the string was flipped upside down. We mirror `k` to its corresponding position on the opposite side of the string (`k = curr_len - 1 - k`).
+
+
+
+> 💡 **Pattern Tip:** Whenever a problem involves operations that exponentially expand a structure (like doubling or repeating) and asks for a specific index `k`, **work backward from the final state using modular arithmetic**. This avoids memory overflow and systematically reduces `k` down to its root origin.
+
+---
+
+### Code
+
+```python
+class Solution:
+    def processStr(self, s: str, k: int) -> str:
+        # Step 1: Forward pass to track lengths after each operation
+        lengths = []
+        curr_len = 0
+        
+        for char in s:
+            if char.isalpha():
+                curr_len += 1
+            elif char == '*':
+                if curr_len > 0:
+                    curr_len -= 1
+            elif char == '#':
+                curr_len *= 2
+            elif char == '%':
+                # Reversing a string does not alter its total length
+                pass
+            lengths.append(curr_len)
+        
+        # If k is initially out of bounds of the final generated string
+        if k >= curr_len or k < 0:
+            return '.'
+            
+        # Step 2: Backward pass to reverse-engineer the position of k
+        for i in range(len(s) - 1, -1, -1):
+            char = s[i]
+            prev_len = lengths[i - 1] if i > 0 else 0
+            
+            if char.isalpha():
+                # If k points exactly to the newly appended character
+                if k == curr_len - 1:
+                    return char
+                curr_len = prev_len
+                
+            elif char == '*':
+                curr_len = prev_len
+                
+            elif char == '#':
+                curr_len = prev_len
+                # If k resides in the duplicated right half, map it to the left half
+                if curr_len > 0:
+                    k %= curr_len
+                    
+            elif char == '%':
+                # Invert the index to undo the string reversal operation
+                if curr_len > 0:
+                    k = curr_len - 1 - k
+                    
+        return '.'
+
+```
+
+---
+
+### Complexity Analysis
+
+* **Time Complexity:** $\mathcal{O}(N)$
+* *Justification:* We iterate through the input string `s` of length $N$ exactly twice—once forward to compute lengths and once backward to decode index `k`—resulting in a strictly linear time execution.
+
+
+* **Space Complexity:** $\mathcal{O}(N)$
+* *Justification:* We utilize an auxiliary array `lengths` of size $N$ to cache the historical lengths of the string at each operation step.
