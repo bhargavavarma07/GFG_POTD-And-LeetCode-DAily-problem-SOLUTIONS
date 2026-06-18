@@ -1,0 +1,76 @@
+### Question
+
+Given a binary matrix `mat[][]` containing only `0`s and `1`s, find the total coverage of all `0`s. The coverage of a particular `0` cell is defined by checking for `1`s in its four cardinal directions (left, right, up, and down). For each direction, if there is at least one `1` anywhere between the `0` and the boundary of the matrix, the coverage increases by one. Return the sum of the coverage values for all `0` cells in the matrix.
+
+---
+
+### Example
+
+**Input:** `mat[][] = [[1, 1, 1, 0], [1, 0, 0, 1]]`
+
+**Output:** `8`
+
+**Explanation:** * The first `0` at `(0, 3)` has `1`s to its left and down (Coverage = 2).
+
+* The second `0` at `(1, 1)` has `1`s to its left, right, and up (Coverage = 3).
+* The third `0` at `(1, 2)` has `1`s to its left, right, and up (Coverage = 3).
+* **Total Coverage** = $2 + 3 + 3 = 8$.
+
+---
+
+### Algorithm
+
+Think of this problem like looking down the hallways of a cross-shaped building. If you are standing on a `0`, you want to look all the way to the end of the hall in all four directions. If there is a light (`1`) turned on anywhere in that direction before the wall, you count it.
+
+Instead of walking down every hallway for every single `0` (which is slow), we can scan the building ahead of time. We mark down the positions of the *very first* and *very last* `1` in every row and column. Later, when a `0` wants to know if there is a `1` to its left, it just checks if the first `1` in its row appears before its current position.
+
+💡 **Tip for remembering this pattern:** When an element needs to look outward to the edges of a grid, **precalculate row and column boundaries** (`min`/`max` indices) to instantly know what lies beyond a coordinate in $\mathcal{O}(1)$ time.
+
+---
+
+### Code
+
+```python
+class Solution:
+    def findCoverage(self, mat: list[list[int]]) -> int:
+        n = len(mat)
+        m = len(mat[0])
+        
+        # Track the minimum and maximum index of '1' for each row and column
+        row_min = [float('inf')] * n
+        row_max = [-1] * n
+        col_min = [float('inf')] * m
+        col_max = [-1] * m
+        
+        # Step 1: Precalculate the outermost boundaries of 1s
+        for r in range(n):
+            for c in range(m):
+                if mat[r][c] == 1:
+                    if c < row_min[r]: row_min[r] = c
+                    if c > row_max[r]: row_max[r] = c
+                    if r < col_min[c]: col_min[c] = r
+                    if r > col_max[c]: col_max[c] = r
+                    
+        total_coverage = 0
+        
+        # Step 2: Calculate coverage for each 0 instantly
+        for r in range(n):
+            for c in range(m):
+                if mat[r][c] == 0:
+                    if row_min[r] < c:   total_coverage += 1 # Left
+                    if row_max[r] > c:   total_coverage += 1 # Right
+                    if col_min[c] < r:   total_coverage += 1 # Up
+                    if col_max[c] > r:   total_coverage += 1 # Down
+                        
+        return total_coverage
+
+```
+
+---
+
+### Complexity Analysis
+
+* **Time Complexity:** $\mathcal{O}(n \times m)$
+Justification: We perform exactly two full passes over the matrix to map out the boundaries and calculate the total coverage.
+* **Space Complexity:** $\mathcal{O}(n + m)$
+Justification: Extra memory is scaled linearly only to store the boundary tracking arrays for the rows ($n$) and columns ($m$).
