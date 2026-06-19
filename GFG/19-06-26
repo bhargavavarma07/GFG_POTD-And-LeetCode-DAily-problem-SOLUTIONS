@@ -1,0 +1,70 @@
+### Question
+
+Given a **sorted** array `arr[]`, find the minimum number of operations required to make all elements from index `0` to `i` equal, for each $i$ ($0 \le i < n$). In one operation, you can either increase or decrease any array element by 1. Return an array containing these minimum operations for each prefix index $i$. Each prefix calculation is independent of modifications made for previous indices.
+
+---
+
+### Example
+
+**Input:** `arr[] = [1, 6, 9, 12]`
+
+**Output:** `[0, 5, 8, 14]`
+
+* **For $i = 0$ ($[1]$):** Already equal $\rightarrow$ `0` operations.
+* **For $i = 1$ ($[1, 6]$):** Minimize distance by changing both to `4` (median) $\rightarrow$ $|1-4| + |6-4| =$ `5` operations.
+* **For $i = 2$ ($[1, 6, 9]$):** Change all to `6` (median) $\rightarrow$ $|1-6| + |6-6| + |9-6| =$ `8` operations.
+
+---
+
+### Algorithm
+
+To minimize the cost of making a group of numbers equal, you should always bring them all to their **median** value. Think of it like a group of friends scattered along a straight street trying to find a meeting spot that minimizes everyone's total walking distance; the fairest spot is always the person standing exactly in the middle.
+
+Since the array is already sorted, the median for any prefix ending at index $i$ is simply the middle element. We can maintain a running calculation efficiently by splitting the current prefix into a left half and a right half. The total operations will always be the **sum of elements in the right half** minus the **sum of elements in the left half**. If the prefix length is odd, the exact median element cancels itself out.
+
+> 💡 **Pattern Tip:** When a problem asks you to minimize absolute differences ($|x - y|$) for a group of numbers, **think Median**. If it asks to minimize squared differences ($(x - y)^2$), **think Mean (Average)**.
+
+---
+
+### Code
+
+```python
+class Solution:
+    def optimalArray(self, arr: list[int]) -> list[int]:
+        n = len(arr)
+        ans = [0] * n
+        
+        # Precompute prefix sums to find range sums in O(1)
+        pref_sum = [0] * (n + 1)
+        for i in range(n):
+            pref_sum[i + 1] = pref_sum[i] + arr[i]
+            
+        for i in range(n):
+            mid = i // 2
+            
+            # Left half sum: from index 0 to mid
+            left_sum = pref_sum[mid + 1] - pref_sum[0]
+            
+            # Right half sum: from mid + 1 to i
+            right_sum = pref_sum[i + 1] - pref_sum[mid + 1]
+            
+            # If the number of elements (i + 1) is odd, 
+            # the median element is at index 'mid' and doesn't contribute to the cost
+            if (i + 1) % 2 != 0:
+                # Exclude the exact median from the left sum calculation
+                left_sum -= arr[mid]
+                
+            ans[i] = right_sum - left_sum
+            
+        return ans
+
+```
+
+---
+
+### Complexity Analysis
+
+* **Time Complexity:** $\mathcal{O}(n)$
+*Justification:* We iterate through the array of size $n$ twice—once to precompute the prefix sums and once to calculate the optimal operations for each index in $\mathcal{O}(1)$ time.
+* **Space Complexity:** $\mathcal{O}(n)$
+*Justification:* We utilize an extra prefix sum array of size $n + 1$ to dynamically retrieve subarray sums efficiently.
